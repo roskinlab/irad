@@ -1,6 +1,7 @@
 import gzip
 import bz2
 import itertools
+import sys
 
 def open_compressed(filename, mode='rb'):
     if filename.endswith('.gz'):
