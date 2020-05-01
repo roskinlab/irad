@@ -24,9 +24,11 @@ def main():
     parser.add_argument('parse_ident', metavar='parse_id', help='the parse identifier to use for splitting the data')
     # the maximum number of identical sequences to merge into one entry
     parser.add_argument('--max-idents', '-m', metavar='N', default=500, help='the maximum number of identical sequences to merge into one entry')
+    # the minimum CDR3 length
+    parser.add_argument('--min-cdr3-len', '-l', metavar='N', type=int, default=10, help='the mimimum CDR3 length (nt)')
     # default cutoffs for V- and J-scores
-    parser.add_argument('--min-v-score', '-v', metavar='S', default=70, help='minimum V-segment score')
-    parser.add_argument('--min-j-score', '-j', metavar='S', default=26, help='minimum J-segment score')
+    parser.add_argument('--min-v-score', '-v', metavar='S',  type=int, default=70, help='minimum V-segment score')
+    parser.add_argument('--min-j-score', '-j', metavar='S',  type=int, default=26, help='minimum J-segment score')
 
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
@@ -54,7 +56,6 @@ def main():
             read_count += 1
 
             read_ident = record['name']
-
 
             # make sure there is only one subject in the file
             if subject is None:
@@ -85,9 +86,10 @@ def main():
                         cdr3_sequence = get_query_region(parse, 'CDR3')
                         cdr3_length = len(cdr3_sequence)
 
-                        signature = (best_v, best_j, cdr3_length)
+                        if cdr3_length >= args.min_cdr3_len:
+                            signature = (best_v, best_j, cdr3_length)
 
-                        data[signature][cdr3_sequence].append(read_ident)
+                            data[signature][cdr3_sequence].append(read_ident)
 
             if read_count % 50000 == 0:
                 logging.info('processed %10d sequence records', read_count)
