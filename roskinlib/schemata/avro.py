@@ -1,4 +1,3 @@
-
 SEQUENCE_RECORD={
     "namespace": "roskinlab",
     "name": "sequence_record",
@@ -168,3 +167,12 @@ SEQUENCE_RECORD={
         }
     ]
 }
+
+# pull out individual sub-records
+for f in SEQUENCE_RECORD['fields']:
+    if f['name'] == 'sequence':
+        SEQUENCE = f['type']
+    elif f['name'] == 'parses':
+        PARSE = f['type']['values'][1]
+assert SEQUENCE['type'] == 'record' and SEQUENCE['name'] == 'sequence'
+assert PARSE['type'] == 'record' and PARSE['name'] == 'parse'
