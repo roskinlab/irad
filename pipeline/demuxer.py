@@ -11,7 +11,7 @@ import csv
 from roskinlib.utils import open_compressed
 
 def main():
-    parser = argparse.ArgumentParser(description='generate barcode and primer informations for FASTQ read pais', 
+    parser = argparse.ArgumentParser(description='generate barcode and primer informations for FASTQ read pairs', 
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # what to put into the source field
     parser.add_argument('source', metavar='source', help='what to put into the source field')
