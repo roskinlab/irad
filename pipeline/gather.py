@@ -29,7 +29,7 @@ def empty_to_none(x):
     else:
         return x
 
-def gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2_iter):
+def gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2_iter, annote_true=[]):
     for merged_read_id, merged_read_seq, merged_read_qual in merged_read_iter:
         # extract the read pair id
         read_pair_id, read_number = merged_read_id.split(' ')
@@ -55,6 +55,10 @@ def gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2
                     },
                     'ranges': {}
                    }
+        # add in the given annotations set to true
+        for a in annote_true:
+            assert a not in sequence['annotations']
+            sequence['annotations'][a] = True
         # added in the ranges
         for field in ['random1', 'barcode1', 'target1', 'barcode2', 'target2']:
             if ident_record[field + ':start'] != '':
@@ -84,12 +88,16 @@ def gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2
 def main():
     parser = argparse.ArgumentParser(description='generate barcode and primer informations for FASTQ read pais', 
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    # 
+    # files, so many files
     parser.add_argument('merged_fastq_filename', metavar='merged.fq', help='the merged reads in FASTQ format')
     parser.add_argument('ident_filename', metavar='idents.csv', help='the list of read idents')
     parser.add_argument('demux_filename', metavar='demux.csv', help='the assigments of reads to subject/sample')
     parser.add_argument('phix1_filename', metavar='phix1.csv', help='file with the alignments of R1 to the PhiX genone')
     parser.add_argument('phix2_filename', metavar='phix2.csv', help='file with the alignments of R2 to the PhiX genone')
+    # options
+    parser.add_argument('--annote-set-true', '-t', metavar='key', action='append', type=str, default=[],
+            help='add the given annotation set to true in the output record')
+
 
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
@@ -112,7 +120,7 @@ def main():
         phix1_iter = csv.DictReader(phix1_handle)
         phix2_iter = csv.DictReader(phix2_handle)
 
-        gatherer = gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2_iter)
+        gatherer = gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2_iter, annote_true=args.annote_set_true)
 
         writer(sys.stdout.buffer, output_schema, gatherer, codec='bzip2')
 

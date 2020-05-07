@@ -15,4 +15,9 @@ cat <<EOF
 
 ${GATHERER} batch${BATCH_NUMBER}.merged_fq.gz batch${BATCH_NUMBER}.ident.gz batch${BATCH_NUMBER}.demux.gz \
             batch${BATCH_NUMBER}.phix1.gz batch${BATCH_NUMBER}.phix2.gz >batch${BATCH_NUMBER}.records.avro
+
+${GATHERER} batch${BATCH_NUMBER}.unmerged_fq.gz batch${BATCH_NUMBER}.ident.gz batch${BATCH_NUMBER}.demux.gz \
+            batch${BATCH_NUMBER}.phix1.gz batch${BATCH_NUMBER}.phix2.gz --annote-set-true unmerged \
+            >batch${BATCH_NUMBER}.unrecords.avro
+
 EOF
