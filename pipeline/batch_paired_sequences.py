@@ -23,7 +23,7 @@ def main():
     parser.add_argument('r1_filename', metavar='r1_file', help='the file with the read 1 sequences')
     parser.add_argument('r2_filename', metavar='r2_file', help='the file with the read 2 sequences')
     # parameters
-    parser.add_argument('--batch-size', '-b', metavar='B', type=int, default=25000,
+    parser.add_argument('--batch-size', '-b', metavar='B', type=int, default=50000,
             help='the number of read pairs to insert at a time')
 
     args = parser.parse_args()
@@ -49,6 +49,8 @@ def main():
                                       batches(FastqGeneralIterator(in_read2_handle), args.batch_size)):
             # filename prefix for the batches
             batch_prefix = os.path.join(args.batch_dirname, 'batch%06d' % batch_count)
+
+            logging.info('creating batch %06d', batch_count)
 
             # compressed batch outout files
             with gzip.open(batch_prefix + '.fq1.gz', 'wt') as out_read1_handle, \
