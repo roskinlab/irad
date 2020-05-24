@@ -66,7 +66,7 @@ def igblast_annotator(germline_lengths, seq_record_iter, igblast_iter, parse_lab
                     })
             
             # process the alignments and keep best scores for each segment
-            best_scores = defaultdict(int)
+            best_scores = defaultdict(float)
             for align_line in parse.alignment_lines[1:]:
                 segment_type = align_line.segment_type
                 align_score = parse.significant_alignments[align_line.name]
