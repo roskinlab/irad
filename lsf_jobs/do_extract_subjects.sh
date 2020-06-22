@@ -7,8 +7,8 @@ SUBJECT=${2?the subject must be given}
 
 cat <<EOF
 #BSUB -L /bin/bash
-#BSUB -W 8:00
+#BSUB -W 18:00
 #BSUB -J extract_${SUBJECT}
 
-${EXTRACTER} ${SOURCE}/batch??????.records_igblast.avro "subjects/${SUBJECT}.avro" "${SUBJECT}"
+${EXTRACTER} --append ${SOURCE}/batch??????.records_igblast.avro "subjects/${SUBJECT}.avro" "${SUBJECT}"
 EOF
