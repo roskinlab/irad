@@ -9,6 +9,7 @@ import time
 import os
 import io
 from itertools import zip_longest
+from collections import defaultdict
 
 from Bio import SeqIO
 import xlsxwriter
@@ -80,39 +81,71 @@ def equal_references(refs1, refs2):
     return True
 
 def get_master_references(records):
-    references = None
-    for record in records:
-        if references is None:
-            references = record.annotations['references']
-        else:
-            assert equal_references(references, record.annotations['references'])
+    all_references = set()
 
-    return references
+    direct_journal_dates = defaultdict(set)
+    direct_author = {}
+    direct_title = {}
+
+    for record in records:
+        for reference in record.annotations['references']:
+            if reference.title == 'Direct Submission':
+                # trim and extract the date from the "journal"
+                journal =  reference.journal
+                assert journal.startswith('Submitted (')
+                date = journal[journal.index('(') + 1:journal.index(')')]
+                journal = journal[journal.index(')') + 1:]
+
+                direct_journal_dates[journal].add(date)
+                direct_author[journal] = reference.authors
+                direct_title[journal]  = reference.title
+            else:
+                all_references.add((reference.authors, reference.title, reference.journal, reference.pubmed_id))
+
+    for journal in direct_journal_dates:
+        all_references.add((direct_author[journal], direct_title[journal],
+                            'Submitted (' + ','.join(direct_journal_dates[journal]) + ')' + journal, ''))
+
+    return all_references
 
 def write_references(workbook, worksheet, references, current_row=0):
+    format_dark       = workbook.add_format({'bg_color': '#CCCCCC'})
+    format_dark_bold  = workbook.add_format({'bold': True, 'bg_color': '#CCCCCC'})
+    format_light      = workbook.add_format({'bg_color': '#EEEEEE'})
+    format_light_bold = workbook.add_format({'bold': True, 'bg_color': '#EEEEEE'})
+
+
+    formats = [format_light, format_dark]
+    formats_bold = [format_light_bold, format_dark_bold]
+
     reference_count = 1
-    for r in references:
-        worksheet.write_string(current_row, 0, 'Reference ' + str(reference_count))
-        worksheet.write_string(current_row, 1, 'Authors')
-        worksheet.write_string(current_row, 2, r.authors)
+    for authors, title, journal, pubmed_id in references:
+        worksheet.write_string(current_row, 0, 'Reference ' + str(reference_count), formats_bold[reference_count % 2])
+        worksheet.write_string(current_row, 1, 'Authors', formats_bold[reference_count % 2])
+        worksheet.merge_range(current_row,  2, current_row, 27, authors, formats[reference_count % 2])
 
         current_row += 1
-        worksheet.write_string(current_row, 1, 'Title')
-        worksheet.write_string(current_row, 2, r.title)
+        worksheet.write_string(current_row, 0, '', formats_bold[reference_count % 2])
+        worksheet.write_string(current_row, 1, 'Title', formats_bold[reference_count % 2])
+        worksheet.merge_range(current_row,  2, current_row, 27, title, formats[reference_count % 2])
 
         current_row += 1
-        worksheet.write_string(current_row, 1, 'Journal')
-        worksheet.write_string(current_row, 2, r.journal)
+        worksheet.write_string(current_row, 0, '', formats_bold[reference_count % 2])
+        worksheet.write_string(current_row, 1, 'Journal', formats_bold[reference_count % 2])
+        worksheet.merge_range(current_row,  2, current_row, 27, journal, formats[reference_count % 2])
 
-        if r.pubmed_id != '':
+        if pubmed_id != '':
             current_row += 1
-            worksheet.write_string(current_row, 1, 'PMID')
-            worksheet.write_url(current_row, 2, 'https://www.ncbi.nlm.nih.gov/pubmed/' + r.pubmed_id, string=r.pubmed_id)
+            worksheet.write_string(current_row, 0, '', formats_bold[reference_count % 2])
+            worksheet.write_string(current_row, 1, 'PMID', formats_bold[reference_count % 2])
+            worksheet.merge_range(current_row,  2, current_row, 27, None)
+            worksheet.write_url(current_row,    2, 'https://www.ncbi.nlm.nih.gov/pubmed/' + pubmed_id,
+                    string=pubmed_id, cell_format=formats[reference_count % 2])
 
         current_row += 1
         reference_count += 1
 
-    worksheet.set_column(0, 0, 10.0)
+    worksheet.set_column(0, 0, 12.0)
     worksheet.set_column(1, 3, 18.0)
 
     return current_row
@@ -130,38 +163,41 @@ def write_curation_row(workbook, worksheet, records, current_row=0):
     worksheet.write_string(current_row,  2, 'Source Features', format_bold_dark)
     worksheet.write_string(current_row,  3, 'Other Features', format_bold_dark)
     # Subject Features
-    worksheet.write_string(current_row,  4, 'Age', format_bold_light)
-    worksheet.write_string(current_row,  5, 'Sex', format_bold_light)
-    worksheet.write_string(current_row,  6, 'Race', format_bold_light)
-    worksheet.write_string(current_row,  7, 'Ethnicity', format_bold_light)
-    worksheet.write_string(current_row,  8, 'Genotype', format_bold_light)
+    worksheet.write_string(current_row,  4, 'Subject ID', format_bold_light)
+    worksheet.write_string(current_row,  5, 'Age', format_bold_light)
+    worksheet.write_string(current_row,  6, 'Sex', format_bold_light)
+    worksheet.write_string(current_row,  7, 'Race', format_bold_light)
+    worksheet.write_string(current_row,  8, 'Ethnicity', format_bold_light)
+    worksheet.write_string(current_row,  9, 'Genotype', format_bold_light)
     # Sample Features
-    worksheet.write_string(current_row,  9, 'Disease', format_bold_dark)
-    worksheet.write_string(current_row, 10, 'Time Point', format_bold_dark)
-    worksheet.write_string(current_row, 11, 'Intervention', format_bold_dark)
+    worksheet.write_string(current_row, 10, 'Sample ID', format_bold_dark)
+    worksheet.write_string(current_row, 11, 'Disease', format_bold_dark)
+    worksheet.write_string(current_row, 12, 'Time Point', format_bold_dark)
+    worksheet.write_string(current_row, 13, 'Intervention', format_bold_dark)
     # Cell Origin
-    worksheet.write_string(current_row, 12, 'Tissue', format_bold_light)
-    worksheet.write_string(current_row, 13, 'Isolation\nMethod', format_bold_light)
-    worksheet.write_string(current_row, 14, 'Cell Type', format_bold_light)
-    worksheet.write_string(current_row, 15, 'Cell Type\nAssayed', format_bold_light)
-    worksheet.write_string(current_row, 16, 'Immortalized', format_bold_light)
+    worksheet.write_string(current_row, 14, 'Tissue', format_bold_light)
+    worksheet.write_string(current_row, 15, 'Isolation\nMethod', format_bold_light)
+    worksheet.write_string(current_row, 16, 'Cell Type', format_bold_light)
+    worksheet.write_string(current_row, 17, 'Cell Type\nAssayed', format_bold_light)
+    worksheet.write_string(current_row, 18, 'Immortalized', format_bold_light)
     # Sequence Method
-    worksheet.write_string(current_row, 17, 'Template', format_bold_dark)
-    worksheet.write_string(current_row, 18, 'Amp.\nMethod', format_bold_dark)
-    worksheet.write_string(current_row, 19, 'Seq.\n Method', format_bold_dark)
+    worksheet.write_string(current_row, 19, 'Template', format_bold_dark)
+    worksheet.write_string(current_row, 20, 'Amp.\nMethod', format_bold_dark)
+    worksheet.write_string(current_row, 21, 'Seq.\n Method', format_bold_dark)
     # Antibody Features
-    worksheet.write_string(current_row, 20, 'Isotype', format_bold_light)
-    worksheet.write_string(current_row, 21, 'Isotype\nAssayed', format_bold_light)
-    worksheet.write_string(current_row, 22, 'Specificity', format_bold_light)
-    worksheet.write_string(current_row, 23, 'Specificity\nAssayed', format_bold_light)
-    worksheet.write_string(current_row, 24, 'Autoantibody', format_bold_light)
-    worksheet.write_string(current_row, 25, 'Binding\nAffinity', format_bold_light)
+    worksheet.write_string(current_row, 22, 'Isotype', format_bold_light)
+    worksheet.write_string(current_row, 23, 'Isotype\nAssayed', format_bold_light)
+    worksheet.write_string(current_row, 24, 'Specificity', format_bold_light)
+    worksheet.write_string(current_row, 25, 'Specificity\nAssayed', format_bold_light)
+    worksheet.write_string(current_row, 26, 'Binding\nAffinity', format_bold_light)
+    worksheet.write_string(current_row, 27, 'Autoantibody', format_bold_light)
 
     current_row += 1
 
-    worksheet.freeze_panes(current_row, 30)
+    worksheet.freeze_panes(current_row, 1)
 
     format_dark = workbook.add_format({'bg_color': '#CCCCCC'})
+    format_dark_wrap = workbook.add_format({'bg_color': '#CCCCCC', 'text_wrap': True})
     format_light = workbook.add_format({'bg_color': '#EEEEEE'})
 
     for record in records:
@@ -173,7 +209,7 @@ def write_curation_row(workbook, worksheet, records, current_row=0):
         description = record.description
         if description.startswith('Homo sapiens '):
             description = description[len('Homo sapiens '):]
-        worksheet.write_string(current_row, 1, description, format_dark)
+        worksheet.write_string(current_row, 1, description, format_dark_wrap)
 
         # output features about the source and other features
         source_features, other_features = get_features(record)
@@ -186,27 +222,29 @@ def write_curation_row(workbook, worksheet, records, current_row=0):
         worksheet.write(current_row,  6, '', format_light)
         worksheet.write(current_row,  7, '', format_light)
         worksheet.write(current_row,  8, '', format_light)
+        worksheet.write(current_row,  9, '', format_light)
 
-        worksheet.write(current_row,  9, '', format_dark)
         worksheet.write(current_row, 10, '', format_dark)
         worksheet.write(current_row, 11, '', format_dark)
+        worksheet.write(current_row, 12, '', format_dark)
+        worksheet.write(current_row, 13, '', format_dark)
 
-        worksheet.write(current_row, 12, '', format_light)
-        worksheet.write(current_row, 13, '', format_light)
         worksheet.write(current_row, 14, '', format_light)
         worksheet.write(current_row, 15, '', format_light)
         worksheet.write(current_row, 16, '', format_light)
+        worksheet.write(current_row, 17, '', format_light)
+        worksheet.write(current_row, 18, '', format_light)
 
-        worksheet.write(current_row, 17, '', format_dark)
-        worksheet.write(current_row, 18, '', format_dark)
         worksheet.write(current_row, 19, '', format_dark)
+        worksheet.write(current_row, 20, '', format_dark)
+        worksheet.write(current_row, 21, '', format_dark)
 
-        worksheet.write(current_row, 20, '', format_light)
-        worksheet.write(current_row, 21, '', format_light)
         worksheet.write(current_row, 22, '', format_light)
         worksheet.write(current_row, 23, '', format_light)
         worksheet.write(current_row, 24, '', format_light)
         worksheet.write(current_row, 25, '', format_light)
+        worksheet.write(current_row, 26, '', format_light)
+        worksheet.write(current_row, 27, '', format_light)
 
         worksheet.set_row(current_row, 60)
 
@@ -216,21 +254,23 @@ def write_curation_row(workbook, worksheet, records, current_row=0):
     format_merge_dark = workbook.add_format({'bold': True, 'center_across': True, 'bg_color': '#CCCCCC'})
     format_merge_light = workbook.add_format({'bold': True, 'center_across': True, 'bg_color': '#EEEEEE'})
     worksheet.merge_range(header_row,  0, header_row,  3, 'Genbank Features',  format_merge_dark)
-    worksheet.merge_range(header_row,  4, header_row,  8, 'Subject Features',  format_merge_light)
-    worksheet.merge_range(header_row,  9, header_row, 11, 'Sample Features',   format_merge_dark)
-    worksheet.merge_range(header_row, 12, header_row, 16, 'Cell Origin',       format_merge_light)
-    worksheet.merge_range(header_row, 17, header_row, 19, 'Sequence Method',   format_merge_dark)
-    worksheet.merge_range(header_row, 20, header_row, 25, 'Antibody Features', format_merge_light)
+    worksheet.merge_range(header_row,  4, header_row,  9, 'Subject Features',  format_merge_light)
+    worksheet.merge_range(header_row, 10, header_row, 13, 'Sample Features',   format_merge_dark)
+    worksheet.merge_range(header_row, 14, header_row, 18, 'Cell Origin',       format_merge_light)
+    worksheet.merge_range(header_row, 19, header_row, 21, 'Sequence Method',   format_merge_dark)
+    worksheet.merge_range(header_row, 22, header_row, 27, 'Antibody Features', format_merge_light)
     worksheet.set_row(header_row + 1, 30)
 
-    worksheet.set_column( 4,  6,  5.5)
-    worksheet.set_column( 7,  9,  9.5)
-    worksheet.set_column(10, 11, 12.5)
-    worksheet.set_column(12, 12,  9.5)
-    worksheet.set_column(13, 15, 10.5)
-    worksheet.set_column(16, 16, 13.5)
-    worksheet.set_column(17, 25, 10.5)
-
+    worksheet.set_column( 4,  4,  9.5)
+    worksheet.set_column( 5,  7,  5.5)
+    worksheet.set_column( 8, 10,  9.5)
+    worksheet.set_column(11, 11, 10.5)
+    worksheet.set_column(12, 13, 12.5)
+    worksheet.set_column(14, 14,  9.5)
+    worksheet.set_column(15, 17, 10.5)
+    worksheet.set_column(18, 18, 13.5)
+    worksheet.set_column(19, 26, 10.5)
+    worksheet.set_column(27, 27, 12.5)
 
     return current_row
 
@@ -261,7 +301,6 @@ def main():
     logging.basicConfig(level=logging.INFO)
     start_time = time.time()
 
-    data = {}
     record_counts = 0
 
     excel_filename = args.genbank_filename
