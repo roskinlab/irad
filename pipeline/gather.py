@@ -32,8 +32,12 @@ def empty_to_none(x):
 def gather_to_record(merged_read_iter, ident_iter, demux_iter, phix1_iter, phix2_iter, annote_true=[]):
     for merged_read_id, merged_read_seq, merged_read_qual in merged_read_iter:
         # extract the read pair id
-        read_pair_id, read_number = merged_read_id.split(' ')
-        assert read_number == '2:N:0:1' # currently, reads should be merged in reverse
+        if ' ' in merged_read_id:
+            read_pair_id, read_number = merged_read_id.split(' ')
+            assert read_number == '2:N:0:1' # currently, reads should be merged in reverse
+        else:
+            read_pair_id = merged_read_id
+
 
         ident_record = next_with_match(ident_iter, read_pair_id)
         demux_record = next_with_match(demux_iter, read_pair_id)

@@ -13,7 +13,7 @@ from itertools import chain
 
 import fastavro
 
-import roskinlib
+from roskinlib.utils import open_compressed
 
 def avro_file_record_filter_iter(filenames, subject):
     for filename in filenames:
@@ -47,7 +47,7 @@ def main():
         args.subject_label = None
     logging.info('extracting records for subject %s', args.subject_label)
 
-    # keep in the first file to get the schema
+    # read in the first file to get the schema
     with open_compressed(args.source_record_filename[0], 'rb') as seq_record_handle:
         reader = fastavro.reader(open_compressed(args.source_record_filename[0], 'rb'))
         schema = reader.writer_schema
