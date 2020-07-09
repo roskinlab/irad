@@ -12,18 +12,9 @@ from collections import defaultdict
 import fastavro
 from Bio import SeqIO
 
-from roskinlib.utils import open_compressed
+from roskinlib.utils import open_compressed, make_range, make_tail_range
 from roskinlib.parsers.igblast import IgBLASTParser
 
-
-def make_range(start, stop):
-    return {'start': start, 'stop': stop}
-
-def make_tail_range(start, stop, length):
-    stop = stop - length
-    if stop == 0:
-        stop = None
-    return {'start': start, 'stop': stop}
 
 def get_padding(seq):
     length = len(seq)

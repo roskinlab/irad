@@ -25,3 +25,15 @@ def open_compressed(filename, mode='rb'):
 def batches(it, batch_size):
     it = iter(it)
     return iter(lambda: tuple(itertools.islice(it, batch_size)), ())
+
+def slice_from_range(range_):
+    return slice(range_['start'], range_['stop'])
+
+def make_range(start, stop):
+    return {'start': start, 'stop': stop}
+
+def make_tail_range(start, stop, length):
+    stop = stop - length
+    if stop == 0:
+        stop = None
+    return make_range(start, stop)
