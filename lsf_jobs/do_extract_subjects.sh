@@ -9,6 +9,7 @@ cat <<EOF
 #BSUB -L /bin/bash
 #BSUB -W 18:00
 #BSUB -J extract_${SUBJECT}
+#BSUB -o logs/extract_${SUBJECT}_${SOURCE}_%J.log
 
 ${EXTRACTER} --append ${SOURCE}/batch??????.records_igblast.avro "subjects/${SUBJECT}.avro" "${SUBJECT}"
 EOF
