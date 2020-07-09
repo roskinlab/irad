@@ -1,5 +1,5 @@
 #!/usr/bin/bash
 
-DIR=${1:-.}
+BARCODES=${1:-.}
 
-cut -d , -f 2 ${DIR}/barcodes | tail -n +2 | sort | uniq
+cut -d , -f 2 ${BARCODES} | tail -n +2 | sort | uniq
