@@ -35,3 +35,22 @@ and install some common packages:
 proxy_on    # to let you download packages from the internet
 pip install --upgrade pyarrow pip fastavro biopython scipy numpy pandas scikit-learn
 ```
+## Getting and using the repository
+
+Clone the repository in your home directory
+```
+cd ~
+git clone https://github.com/roskinlab/irbase.git
+```
+Then you will need to tell python to look there when you do an import:
+```
+export PYTHONPATH=$HOME/irbase:$PYTHONPATH
+```
+Add the above command to your ~/.bashrc file so that setup everytime you loging.
+
+Then you should be able to do:
+```
+source ~/envs/cluster/bin/activate
+python
+import roskinlib
+```
