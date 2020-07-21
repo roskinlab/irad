@@ -14,7 +14,7 @@ Then create a new venv:
 ```
 cd ~
 mkdir envs
-python -m venv envs/cluster   # NOTE: use python instead of python3
+python -m venv ~/envs/cluster   # NOTE: use python instead of python3
 ```
 
 Now you can activate it using:
@@ -28,3 +28,9 @@ and install some common packages:
 ```
 pip install --upgrade pyarrow pip fastavro biopython scipy numpy pandas scikit-learn
 ```
+
+Some packages (notable pandas) needs the libffi module loaded. To get this to happen when everyou activate this venv, edit ~/envs/cluster/bin/activate and add
+```
+module load libffi
+```
+to the end.
