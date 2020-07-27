@@ -124,6 +124,10 @@ SEQUENCE_RECORD={
                                             "type": "string"
                                         },
                                         {
+                                            "name": "length",
+                                            "type": "int"
+                                        },
+                                        {
                                             "name": "score",
                                             "type": "float"
                                         },
