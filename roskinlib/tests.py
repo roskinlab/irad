@@ -19,7 +19,7 @@ def test_parse_alignment_structure(record):
 
                 padding_start = alignment['padding']['start']
                 padding_stop  = alignment['padding']['stop']
-                if padding_start + len(alignment_string) + padding_stop != query_length:
+                if padding_start + alignment_length + padding_stop != query_length:
                     print(f'record {record_name}, parse {parse_label}, type {alignment_type}{number}:',
                           f'alignments have different length, {padding_start} + {alignment_length} + {padding_stop} != {query_length}')
                     return False
@@ -27,7 +27,8 @@ def test_parse_alignment_structure(record):
     return True
 
 def calc_germline_diff(query, diff):
-    return ''.join(d if d != '.' else q for q, d in zip(query, diff.upper()))
+    assert len(query) == len(diff)
+    return ''.join(q if d == '.' else d for q, d in zip(query, diff.upper()))
 
 def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_repertoire):
     record_name = record['name']
@@ -40,7 +41,7 @@ def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_reperto
 
             query_range = slice_from_range(query_alignment['range'])
             input_substring = input_sequence[query_range]
-            if input_substring != query_string.replace('-', ''):
+            if input_substring != query_string.replace('-', '').replace('.', ''):
                 print(f'record {record_name}, parse {parse_label}, type Q0:',
                         f'query substring does not match query, {input_substring} != {query_string}')
                 return False
@@ -68,6 +69,7 @@ def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_reperto
                         alignment_range = slice(alignment_range.start, len(d_repertoire[alignment_name]) + alignment_range.stop)
 
                     if alignment_range.start > alignment_range.stop:
+                        print(record_name)
                         alignment_range = slice(alignment_range.stop - 1, alignment_range.start + 1)
                         actual_germline = d_repertoire[alignment_name][alignment_range].upper()
                         actual_germline = str(Seq.Seq(actual_germline).reverse_complement())
@@ -78,7 +80,7 @@ def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_reperto
                 else:
                     assert False
 
-                if predicted_germline.replace('-', '') != actual_germline:
+                if predicted_germline.replace('-', '').replace('.', '') != actual_germline:
                     print(f'record {record_name}, parse {parse_label}, type {alignment_type}{number}:',
                           f'predicted germline does not match germline, {predicted_germline} != {actual_germline}')
                     return False
