@@ -30,7 +30,19 @@ def calc_germline_diff(query, diff):
     assert len(query) == len(diff)
     return ''.join(q if d == '.' else d for q, d in zip(query, diff.upper()))
 
+def gapped_equal(s1, s2):
+    if len(s1) != len(s2):
+        return False
+
+    for b1, b2 in zip(s1, s2):
+        if b1 != '.' and b2 != '.':
+            if b1 != b2:
+                return False
+
+    return True
+
 def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_repertoire):
+    passed_test = True
     record_name = record['name']
     input_sequence = record['sequence']['sequence']
     for parse_label, parse in record['parses'].items():
@@ -38,13 +50,17 @@ def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_reperto
             query_alignment, alignments = parse['alignments'][0], parse['alignments'][1:]
             query_string = query_alignment['alignment']
             assert query_alignment['type'] == 'Q'
+            if query_alignment['padding']['start'] != 0 or query_alignment['padding']['stop'] != 0:
+                print(f'record {record_name}, parse {parse_label}, type Q0:',
+                        f"query padding ({query_alignment['padding']['start']}, {query_alignment['padding']['stop']}) is not zero")
+                passed_test = False
 
             query_range = slice_from_range(query_alignment['range'])
             input_substring = input_sequence[query_range]
             if input_substring != query_string.replace('-', '').replace('.', ''):
                 print(f'record {record_name}, parse {parse_label}, type Q0:',
                         f'query substring does not match query, {input_substring} != {query_string}')
-                return False
+                passed_test = False
 
             for alignment, number in zip(alignments, count(1)):
                 alignment_name = alignment['name']
@@ -80,9 +96,10 @@ def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_reperto
                 else:
                     assert False
 
-                if predicted_germline.replace('-', '').replace('.', '') != actual_germline:
+                #if predicted_germline.replace('-', '').replace('.', '') != actual_germline:
+                if not gapped_equal(predicted_germline.replace('-', ''), actual_germline):
                     print(f'record {record_name}, parse {parse_label}, type {alignment_type}{number}:',
                           f'predicted germline does not match germline, {predicted_germline} != {actual_germline}')
-                    return False
-    
-    return True
+                    passed_test = False
+
+    return passed_test
