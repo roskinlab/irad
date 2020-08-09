@@ -82,8 +82,7 @@ class IgBLASTRecord:
             raise ValueError(length)
         self.query_length = int(length[7:])
 
-        if header != '                                                                                                      Score        E' or \
-           title != 'Sequences producing significant alignments:                                                          (Bits)     Value':
+        if header.split() != ['Score', 'E'] or title.split() != ['Sequences', 'producing', 'significant', 'alignments:', '(Bits)', 'Value']:
             raise ValueError(header + title)
 
         # parse the list of alignments and their score
