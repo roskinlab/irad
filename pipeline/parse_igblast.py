@@ -12,7 +12,7 @@ from collections import defaultdict
 import fastavro
 from Bio import SeqIO
 
-from roskinlib.utils import open_compressed, make_range, make_tail_range
+from roskinlib.utils import open_compressed, make_range
 from roskinlib.parsers.igblast import IgBLASTParser
 
 
@@ -49,9 +49,10 @@ def igblast_annotator(germline_lengths, seq_record_iter, igblast_iter, parse_lab
             parse_record['alignments'].append(
                     {'type': 'Q',
                     'name': '',
+                    'length': parse.query_length,
                     'score': float('nan'),
                     'e_value': float('nan'),
-                    'range': make_tail_range(query_alignment.start, query_alignment.end, parse.query_length),
+                    'range': make_range(query_alignment.start, query_alignment.end),
                     'padding': make_range(0, 0),
                     'alignment': query_alignment.line
                     })
@@ -65,9 +66,10 @@ def igblast_annotator(germline_lengths, seq_record_iter, igblast_iter, parse_lab
                 parse_record['alignments'].append(
                         {'type': segment_type,
                         'name': align_line.name,
+                        'length': germline_lengths[align_line.name],
                         'score': align_score.bit_score,
                         'e_value': align_score.e_value,
-                        'range': make_tail_range(align_line.start, align_line.end, germline_lengths[align_line.name]),
+                        'range': make_range(align_line.start, align_line.end),
                         'padding': make_range(start_padding, stop_padding),
                         'alignment': trimmed_line
                         })
@@ -91,14 +93,23 @@ def igblast_annotator(germline_lengths, seq_record_iter, igblast_iter, parse_lab
                 yield record
 
 
+def igblast_chain(igblast_filenames):
+    for filename in igblast_filenames:
+        with open_compressed(filename, 'rt') as igblast_handle:
+            logging.info('processing parsed in %s', filename)
+            igblast_parse_reader = IgBLASTParser(igblast_handle)
+            for record in igblast_parse_reader:
+                yield record
+
+
 def main():
     parser = argparse.ArgumentParser(description='load IgBLAST annotations into an Avro sequence record',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # input files
+    parser.add_argument('parse_label', metavar='label', help='the parse label to use for the parse')
     parser.add_argument('repertoire_filenames', metavar='repertoire-file', nargs=3, help='the V(D)J repertoire file used in IgBLAST')
     parser.add_argument('seq_record_filename', metavar='seq_record.avro', help='the Avro file with the sequence records')
-    parser.add_argument('igblast_output_filename', metavar='parse.igblast', help='the output of IgBLAST to parse and attach to the sequence record')
-    parser.add_argument('parse_label', metavar='label', help='the parse label to use for the parse')
+    parser.add_argument('igblast_output_filenames', metavar='parse.igblast', nargs='+', help='the output of IgBLAST to parse and attach to the sequence record')
     # options
     parser.add_argument('--min-v-score', metavar='S', type=float, default=70.0, help='the minimum score for the V-segment')
     parser.add_argument('--min-j-score', metavar='S', type=float, default=26.0, help='the minimum score for the V-segment')
@@ -116,14 +127,12 @@ def main():
 
     logging.info('adding parses to sequence records')
 
-    with open_compressed(args.seq_record_filename, 'rb') as seq_record_handle, \
-         open_compressed(args.igblast_output_filename, 'rt') as igblast_handle:
-
+    with open_compressed(args.seq_record_filename, 'rb') as seq_record_handle:
         seq_record_reader = fastavro.reader(seq_record_handle)
-        igblast_parse_reader = IgBLASTParser(igblast_handle)
+        igblast_parse_reader = igblast_chain(args.igblast_output_filenames)
 
         annotator = igblast_annotator(germline_lengths, seq_record_reader, igblast_parse_reader, args.parse_label,
-                                      args.min_v_score, args.min_j_score)
+                                    args.min_v_score, args.min_j_score)
 
         fastavro.writer(sys.stdout.buffer, seq_record_reader.writer_schema, annotator, codec='bzip2')
 
