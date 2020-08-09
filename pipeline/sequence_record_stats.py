@@ -31,6 +31,7 @@ def main():
     no_subject = 0
     no_subject_full_ident = 0
     no_subject_phix = 0
+    no_subject_parsed = 0
     yes_subject = 0
     yes_subject_parsed = 0
 
@@ -53,6 +54,10 @@ def main():
                     if record['sequence']['annotations']['phix1'] > 0 or \
                        record['sequence']['annotations']['phix2'] > 0:
                         no_subject_phix += 1
+
+                    if args.parse_label:
+                        if args.parse_label in record['parses'] and record['parses'][args.parse_label] is not None:
+                            no_subject_parsed += 1
                 else:
                     yes_subject += 1
                     if args.parse_label:
@@ -64,6 +69,8 @@ def main():
     if args.parse_label:
         print('    %d (%0.2f%%) of those had parses (%s)' % (yes_subject_parsed, 100*yes_subject_parsed/yes_subject, args.parse_label))
     print('  %d (%0.2f%%) had no subject' % (no_subject, 100*no_subject/record_count))
+    if args.parse_label:
+        print('    %d (%0.2f%%) of those had parses (%s)' % (no_subject_parsed, 100*no_subject_parsed/no_subject, args.parse_label))
     print('    %d (%0.2f%%) of those where PhiX' % (no_subject_phix, 100*no_subject_phix/no_subject))
     print('    %d (%0.2f%%) of those had full idents' % (no_subject_full_ident, 100*no_subject_full_ident/no_subject))
 
