@@ -41,7 +41,7 @@ def gapped_equal(s1, s2):
 
     return True
 
-def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_repertoire):
+def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_repertoire, remove_caps=False):
     passed_test = True
     record_name = record['name']
     input_sequence = record['sequence']['sequence']
@@ -57,6 +57,8 @@ def test_parse_alignment_sequences(record, v_repertoire, d_repertoire, j_reperto
 
             query_range = slice_from_range(query_alignment['range'])
             input_substring = input_sequence[query_range]
+            if remove_caps:
+                input_substring = input_substring.replace('A', '').replace('C', '').replace('G', '').replace('T', '')
             if input_substring != query_string.replace('-', '').replace('.', ''):
                 print(f'record {record_name}, parse {parse_label}, type Q0:',
                         f'query substring does not match query, {input_substring} != {query_string}')
