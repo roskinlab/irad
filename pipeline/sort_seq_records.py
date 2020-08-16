@@ -54,11 +54,11 @@ def main():
 
     # make the base directory if it doesn't already exist
     base_path = args.pathname_base
-    if os.path.isdir(base_path):
-        logging.info('using existing base directory %s and adding to it', base_path)
-    else:
-        logging.info('making base directory %s', base_path)
+    logging.info('making base directory %s', base_path)
+    try:
         os.mkdir(base_path)
+    except FileExistsError:
+        logging.info('base directory already exists, adding to it')
     
     # load the records in and group them by subject and source into a list
     with tempfile.TemporaryDirectory() as temp_dir_name:
