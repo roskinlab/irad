@@ -7,7 +7,7 @@ shift
 cat <<EOF
 #BSUB -L /bin/bash
 #BSUB -W 16:00
-#BSUB -M 30000
+#BSUB -M 42000
 #BSUB -J sort_${DATA_DIR}
 #BSUB -o logs/sort_${DATA_DIR}_%J.log
 
