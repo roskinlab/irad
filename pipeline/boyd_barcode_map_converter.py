@@ -65,7 +65,10 @@ def main():
                           'target1': forward_target,
                           'barcode2': reverse_barcode}
             # add rows for each pool
-            for v_region in ['VH1_FR1', 'VH2_FR1', 'VH3_FR1', 'VH4_FR1', 'VH5_FR1', 'VH6_FR1']:
+            all_v_regions = ['VH1_FR1', 'VH2_FR1', 'VH3_FR1', 'VH4_FR1', 'VH5_FR1', 'VH6_FR1']
+            if forward_target == 'IGHJ': # gDNA, add FR2 primers
+                all_v_regions += ['VH1_FR2', 'VH2_FR2', 'VH3_FR2', 'VH4_FR2', 'VH5_FR2', 'VH6_FR2', 'VH7_FR2']
+            for v_region in all_v_regions:
                 new_record['target2'] = v_region
 
                 if not header_written:
