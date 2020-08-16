@@ -39,7 +39,7 @@ def main():
     # parameters
     parser.add_argument('--input-format',  '-f', metavar='F', default='fasta', help='input file format')
     parser.add_argument('--output-format', '-F', metavar='F', default='fasta', help='output file format')
-    parser.add_argument('--batch-size', '-b', metavar='B', type=int, default=25000,
+    parser.add_argument('--batch-size', '-b', metavar='B', type=int, default=40000,
             help='the number of sequences per batch')
 
     args = parser.parse_args()
