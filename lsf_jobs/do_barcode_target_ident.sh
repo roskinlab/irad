@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 
-IDENTER=/data/RoskinLab/irbase/pipeline/identer_read_pairs.py
-BARCODES=/data/RoskinLab/irbase/database/barcodes
-TARGETS=/data/RoskinLab/irbase/database/targets
+IDENTER=~/irbase/pipeline/identer_read_pairs.py
+BARCODES=~/irbase/database/barcodes
+TARGETS=~/irbase/database/targets
 
 BATCH_NUMBER=${1?the six digit batch number must be given}
 if [ ${#BATCH_NUMBER} -ne 6 ] ; then

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-MERGER=/data/RoskinLab/irbase/lsf_jobs/merge_paired_reads.sh
+MERGER=~/irbase/lsf_jobs/merge_paired_reads.sh
 
 BATCH_NUMBER=${1?the six digit batch number must be given}
 if [ ${#BATCH_NUMBER} -ne 6 ] ; then

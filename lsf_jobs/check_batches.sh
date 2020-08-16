@@ -1,6 +1,6 @@
 #!/bin/bash
 
-STATS=/data/RoskinLab/irbase/pipeline/sequence_record_stats.py
+STATS=~/irbase/pipeline/sequence_record_stats.py
 
 BATCH_DIR=${1?batch directory is required}
 for b in $(~/irbase/lsf_jobs/batches.sh ${BATCH_DIR}) ; do

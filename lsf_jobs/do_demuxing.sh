@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-DEMUXER=/data/RoskinLab/irbase/pipeline/demuxer.py
+DEMUXER=~/irbase/pipeline/demuxer.py
 
 SOURCE=${1?the source label must be provided}
 BARCODE_MAP=${2?the map provided}

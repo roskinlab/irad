@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-GATHERER=/data/RoskinLab/irbase/pipeline/gather.py
+GATHERER=~/irbase/pipeline/gather.py
 
 BATCH_NUMBER=${1?the six digit batch number must be given}
 if [ ${#BATCH_NUMBER} -ne 6 ] ; then

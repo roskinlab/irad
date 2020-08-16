@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 DATABASE=/data/RoskinLab/irep/phix/genome.fasta
-PARSER=/data/RoskinLab/irbase/pipeline/sam_align_score.py
+PARSER=~/irbase/pipeline/sam_align_score.py
 
 BATCH_NUMBER=${1?the six digit batch number must be given}
 if [ ${#BATCH_NUMBER} -ne 6 ] ; then
