@@ -14,7 +14,9 @@ JOB_LABEL=$(basename "${SEQ_REC_FILE}" .avro)
 
 cat <<EOF
 #BSUB -L /bin/bash
+#BSUB -W 16:00
 #BSUB -J add_parse_${JOB_LABEL}
+#BSUB -o add_${PARSE_DIR}_%J.log
 
 ${PARSER} ${PARSE_LABEL} ${ROOT}/${SPECIES}_gl_{V,D,J} ${SEQ_REC_FILE} ${PARSE_DIR}/batch??????.igblast.${PARSE_LABEL}.gz >${DEST_FILE}
 EOF
