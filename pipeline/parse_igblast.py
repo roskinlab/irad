@@ -121,7 +121,7 @@ def main():
     logging.info('calculating V(D)J repertoire lengths')
     germline_lengths = {}
     for rep_filename in args.repertoire_filenames:
-        with open(rep_filename, 'r') as rep_handle:
+        with open(rep_filename, 'rt') as rep_handle:
             for record in SeqIO.parse(rep_handle, 'fasta'):
                 germline_lengths[record.id] = len(record)
 
