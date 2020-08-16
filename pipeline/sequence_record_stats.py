@@ -69,10 +69,13 @@ def main():
     if args.parse_label:
         print('    %d (%0.2f%%) of those had parses (%s)' % (yes_subject_parsed, 100*yes_subject_parsed/yes_subject, args.parse_label))
     print('  %d (%0.2f%%) had no subject' % (no_subject, 100*no_subject/record_count))
-    if args.parse_label:
+
+    if no_subject == 0:
+        pass
+    else:
         print('    %d (%0.2f%%) of those had parses (%s)' % (no_subject_parsed, 100*no_subject_parsed/no_subject, args.parse_label))
-    print('    %d (%0.2f%%) of those where PhiX' % (no_subject_phix, 100*no_subject_phix/no_subject))
-    print('    %d (%0.2f%%) of those had full idents' % (no_subject_full_ident, 100*no_subject_full_ident/no_subject))
+        print('    %d (%0.2f%%) of those where PhiX' % (no_subject_phix, 100*no_subject_phix/no_subject))
+        print('    %d (%0.2f%%) of those had full idents' % (no_subject_full_ident, 100*no_subject_full_ident/no_subject))
 
     elapsed_time = time.time() - start_time
     logging.info('elapsed time %s', time.strftime('%H hours, %M minutes, %S seconds', time.gmtime(elapsed_time)))
