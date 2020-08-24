@@ -17,6 +17,6 @@ EOF
 
 for i in "$@"; do
 cat <<EOF
-${CLUSTERER} ${i} ${SEQ_IDENTITY}
+${CLUSTERER} "${i}" ${SEQ_IDENTITY}
 EOF
 done
