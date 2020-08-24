@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import sys
 import argparse
-import json
+import csv
 
 import fastavro
 from collections import defaultdict
@@ -45,8 +45,8 @@ def get_parse_query(parse):
         assert alignment['type'] == 'Q'
         return alignment
 
+__mutation_level_bases = set(['A', 'C', 'G', 'T', 'N'])
 def mutation_level(q_align, v_align):
-    bases = set(['A', 'C', 'G', 'T', 'N'])
     diff_count = 0
     same_count = 0
 
@@ -54,7 +54,7 @@ def mutation_level(q_align, v_align):
         if q != '-': # skip if gap
             if v == '.':
                 same_count += 1
-            elif v in bases:
+            elif v in __mutation_level_bases:
                 diff_count += 1
 
     mut_level = diff_count / (diff_count + same_count)
@@ -64,43 +64,49 @@ def main():
     parser = argparse.ArgumentParser(description='get the CDR3 length from an Avro file',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('parse_label', metavar='label', help='the parse label to use for the parse')
-    parser.add_argument('filename', metavar='file', help='the Avro file to read')
+    parser.add_argument('filenames', metavar='file', nargs='+', help='the Avro file to read')
+    parser.add_argument('--lineage',     '-l', metavar='L', help='the lineage label to use')
     parser.add_argument('--min-v-score', '-v', metavar='S', default=70, help='minimum V-segment score')
     parser.add_argument('--min-j-score', '-j', metavar='S', default=26, help='minimum J-segment score')
     args = parser.parse_args()
 
-    reader = fastavro.reader(open_compressed(args.filename, 'rb'))
+    writer = None
 
-    subject = None
-    mut_level_type = defaultdict(list)
+    for filename in args.filenames:
+        with open_compressed(filename, 'rb') as read_handle:
+            reader = fastavro.reader(read_handle)
 
-    for record in reader:
-        parse = record['parses'][args.parse_label]
-        best_v, v_score, _, _, _, j_score = best_vdj_score(parse)
+            for record in reader:
+                parse = record['parses'][args.parse_label]
+                best_v, v_score, _, _, _, j_score = best_vdj_score(parse)
 
-        if v_score is not None and j_score is not None and \
-                v_score >= args.min_v_score and j_score >= args.min_j_score:
+                if v_score is not None and j_score is not None and \
+                        v_score >= args.min_v_score and j_score >= args.min_j_score:
 
-            if subject is None:
-                subject = record['subject']
-            else:
-                assert subject == record['subject']
+                    subject = record['subject']
+                    type_ = record['sequence']['annotations']['target1']
 
-            type_ = record['sequence']['annotations']['target1']
+                    best_q = get_parse_query(parse)
+                    assert best_q['padding']['start'] == 0
 
-            best_q = get_parse_query(parse)
-            assert best_q['padding']['start'] == 0
+                    q_align = best_q['alignment']
+                    v_align = best_v['alignment']
 
-            q_align = best_q['alignment']
-            v_align = best_v['alignment']
+                    mut_level = mutation_level(q_align, v_align)
 
-            mut_level = mutation_level(q_align, v_align)
+                    if writer is None:
+                        if args.lineage:
+                            writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'mutation_level'])
+                        else:
+                            writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'mutation_level'])
+                        writer.writeheader()
 
-            mut_level_type[type_].append(mut_level)
+                    row = {'subject': record['subject'], 'source': record['source'], 'type': type_, 'mutation_level': mut_level}
+                    if args.lineage:
+                        if args.lineage in record['lineages']:
+                            row['lineage'] = record['lineages'][args.lineage]
 
-    for type_, levels in mut_level_type.items():
-        mean_mut_level = sum(levels) / len(levels)
-        print(subject, type_, mean_mut_level, sep='\t')
+                    writer.writerow(row)
 
 if __name__ == '__main__':
     sys.exit(main())

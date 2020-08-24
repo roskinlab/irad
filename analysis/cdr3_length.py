@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import sys
 import argparse
-import json
+import csv
 
 import fastavro
 from collections import defaultdict
@@ -46,43 +46,48 @@ def main():
     parser = argparse.ArgumentParser(description='get the CDR3 length from an Avro file',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('parse_label', metavar='label', help='the parse label to use for the parse')
-    parser.add_argument('filename', metavar='file', help='the Avro file to read')
+    parser.add_argument('filenames', metavar='file', nargs='+', help='the Avro file to read')
+    parser.add_argument('--lineage',     '-l', metavar='L', help='the lineage label to use')
     parser.add_argument('--min-v-score', '-v', metavar='S', default=70, help='minimum V-segment score')
     parser.add_argument('--min-j-score', '-j', metavar='S', default=26, help='minimum J-segment score')
     args = parser.parse_args()
 
-    reader = fastavro.reader(open_compressed(args.filename, 'rb'))
+    writer = None
 
-    subject = None
-    cdr3_length_type = defaultdict(list)
+    for filename in args.filenames:
+        with open_compressed(filename, 'rb') as read_handle:
+            reader = fastavro.reader(read_handle)
 
-    for record in reader:
-        parse = record['parses'][args.parse_label]
-        v_score, _, j_score = best_vdj_score(parse)
+            for record in reader:
+                parse = record['parses'][args.parse_label]
+                v_score, _, j_score = best_vdj_score(parse)
 
-        if v_score is not None and j_score is not None and \
-                v_score >= args.min_v_score and j_score >= args.min_j_score:
+                if v_score is not None and j_score is not None and \
+                        v_score >= args.min_v_score and j_score >= args.min_j_score:
 
-            if 'CDR3' in parse['ranges']:
-                if subject is None:
-                    subject = record['subject']
-                else:
-                    assert subject == record['subject']
+                    if 'CDR3' in parse['ranges']:
+                        subject = record['subject']
+                        type_ = record['sequence']['annotations']['target1']
 
-                type_ = record['sequence']['annotations']['target1']
+                        cdr3_slice = make_slice(parse['ranges']['CDR3'])
+                        query_sequence = get_parse_query(parse)
+                        cdr3_sequence = query_sequence[cdr3_slice]
 
+                        cdr3_length = len(cdr3_sequence.replace('-', ''))
 
-                cdr3_slice = make_slice(parse['ranges']['CDR3'])
-                query_sequence = get_parse_query(parse)
-                cdr3_sequence = query_sequence[cdr3_slice]
+                        if writer is None:
+                            if args.lineage:
+                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'cdr3_length'])
+                            else:
+                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'cdr3_length'])
+                            writer.writeheader()
 
-                cdr3_length = len(cdr3_sequence.replace('-', ''))
+                        row = {'subject': record['subject'], 'source': record['source'], 'type': type_, 'cdr3_length': cdr3_length}
+                        if args.lineage:
+                            if args.lineage in record['lineages']:
+                                row['lineage'] = record['lineages'][args.lineage]
 
-                cdr3_length_type[type_].append(cdr3_length)
-
-    for type_, lengths in cdr3_length_type.items():
-        mean_cdr3_length = sum(lengths) / len(lengths)
-        print(subject, type_, mean_cdr3_length, sep='\t')
+                        writer.writerow(row)
 
 if __name__ == '__main__':
     sys.exit(main())
