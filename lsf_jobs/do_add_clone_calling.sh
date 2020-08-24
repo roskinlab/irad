@@ -12,6 +12,7 @@ LABEL=$(basename "${SOURCE}" .avro)
 cat <<EOF
 #BSUB -L /bin/bash
 #BSUB -W 8:00
+#BSUB -M 4000
 #BSUB -J clone_${LABEL}
 #BSUB -o clone_${LABEL}_%J.log
 
