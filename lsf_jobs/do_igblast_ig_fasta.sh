@@ -8,7 +8,9 @@ OUTPUT_FILE=${INPUT_FILE%.fasta}
 OUTPUT_FILE=${OUTPUT_FILE%.fa}
 
 cat <<EOF
-#BSUB -o logs/parse_${PARSE_LABEL}_%J.log
+#BSUB -o parse_${PARSE_LABEL}_%J.log
+#BSUB -W 4:00
+#BSUB -M 4000
 
 /data/RoskinLab/base/parsers/igblast_ig.sh ${PARSE_LABEL} ${INPUT_FILE} ${NUM_ALIGN} | gzip >${OUTPUT_FILE}.igblast.${PARSE_LABEL}.gz
 EOF
