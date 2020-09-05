@@ -37,11 +37,24 @@ pip install --upgrade pyarrow pip fastavro biopython scipy numpy pandas scikit-l
 ```
 ## Getting and using the repository
 
-Clone the repository in your home directory
+To set up git, on the command line run:
+
+git config --global user.name "Firstname Lastname"
+git config --global user.email emailaddress@something.com
+git config --global credential.helper store
+
+Then in github you can click on your profile picture and select settings Settings. Then
+click Developer Settings on the lower left and then Personal access tokens. From there
+you can Generate a new token. Give it a descriptive and you probably only need "repo"
+to be in the scope of the token. Copy the personal access token, you'll be using it as your password in a second.
+
+Then from the command like, you can do:
 ```
 cd ~
 git clone https://github.com/roskinlab/irbase.git
 ```
+and enter in your github username and the personal access token as your password.
+
 Then you will need to tell python to look there when you do an import:
 ```
 export PYTHONPATH=$HOME/irbase:$PYTHONPATH
