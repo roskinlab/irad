@@ -77,12 +77,12 @@ def main():
 
                         if writer is None:
                             if args.lineage:
-                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'cdr3_length'])
+                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'cdr3_length','v_j_in_frame','has_stop_codon'])
                             else:
-                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'cdr3_length'])
+                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'cdr3_length','v_j_in_frame','has_stop_codon'])
                             writer.writeheader()
 
-                        row = {'subject': record['subject'], 'source': record['source'], 'type': type_, 'cdr3_length': cdr3_length}
+                        row = {'subject': record['subject'], 'source': record['source'], 'type': type_, 'cdr3_length': cdr3_length, 'v_j_in_frame':parse['v_j_in_frame'],'has_stop_codon':parse['has_stop_codon']}
                         if args.lineage:
                             if args.lineage in record['lineages']:
                                 row['lineage'] = record['lineages'][args.lineage]
