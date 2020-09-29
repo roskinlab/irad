@@ -7,12 +7,12 @@ import argparse
 import logging
 import time
 import os
-from collections import defaultdict
 
 import fastavro
 from Bio.Seq import Seq
 from roskinlib.utils import batches
 from roskinlib.seq_rec import best_vdj_score, get_query_region, remove_allele
+from roskinlib.warehouse import DirectoryWarehouse
 
 def main():
     parser = argparse.ArgumentParser(description='batch paired-end sequences from an Illumina run of an amplicon library',
@@ -37,12 +37,8 @@ def main():
     logging.basicConfig(level=logging.INFO)
     start_time = time.time()
 
-    # check if the batch directory already exists
-    if os.path.exists(args.batch_dirname):
-        logging.error('batch direcotry %s already exists', args.batch_dirname)
-        return 10
-    else:
-        os.mkdir(args.batch_dirname)
+    warehouse = DirectoryWarehouse(args.batch_dirname, 'v_segment', 'j_segment', 'cdr3_len', 'subject',
+        val_converter=lambda x: str(x).replace('/', 's'))
 
     read_count = 0
     unparsed_count = 0
@@ -51,7 +47,7 @@ def main():
     parse_ident = args.parse_ident
     lineage_ident = args.lineage_ident
 
-    subject = None
+    first_record = True
     data = {}
 
     for filename in args.seq_record_avro_filenames:
@@ -63,9 +59,10 @@ def main():
                 read_ident = record['name']
 
                 # make sure there is only one subject in the file
-                if subject is None:
+                if first_record:
                     subject = record['subject']
                     logging.info('processing reads for subject %s', subject)
+                    first_record = False
                 else:
                     if subject != record['subject']:
                         logging.error('Avro file must contrain records from a single subject, found %s and %s', subject, record['subject'])
@@ -110,13 +107,12 @@ def main():
                     logging.info('processed %10d sequence records', read_count)
 
     logging.info('making batch files')
+
     for signature, cdr3_aa in data.items():
         best_v, best_j, cdr3_length = signature
-        best_v = best_v.replace('/', 's')
-        best_j = best_j.replace('/', 's')
-        fasta_filename = os.path.join(args.batch_dirname, 'seqaa_%s_%s_%d.fasta' % (best_v, best_j, cdr3_length))
-        logging.info('writing file %s', fasta_filename)
-        with open(fasta_filename, 'wt') as fasta_file_handle:
+
+        with warehouse.open('.fasta', 'wt', v_segment=best_v, j_segment = best_j, cdr3_len=cdr3_length,
+                subject=subject) as fasta_file_handle:
             for sequence, labels in cdr3_aa.items():
                 for l in batches(labels, args.max_idents):
                     fasta_file_handle.write('>%s\n%s\n' % (','.join([';'.join(i) for i in l]), sequence))
