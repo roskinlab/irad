@@ -86,6 +86,9 @@ def main():
                     subject = record['subject']
                     type_ = record['sequence']['annotations']['target1']
 
+                    v_j_in_frame = parse['v_j_in_frame']
+                    has_stop_codon = parse['has_stop_codon']
+
                     best_q = get_parse_query(parse)
                     assert best_q['padding']['start'] == 0
 
@@ -96,12 +99,14 @@ def main():
 
                     if writer is None:
                         if args.lineage:
-                            writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'mutation_level'])
+                            writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'v_j_in_frame', 'has_stop_codon', 'mutation_level'])
                         else:
-                            writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'mutation_level'])
+                            writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'v_j_in_frame', 'has_stop_codon', 'mutation_level'])
                         writer.writeheader()
 
-                    row = {'subject': record['subject'], 'source': record['source'], 'type': type_, 'mutation_level': mut_level}
+                    row = {'subject': record['subject'], 'source': record['source'],
+                            'type': type_, 'v_j_in_frame': v_j_in_frame, 'has_stop_codon': has_stop_codon,
+                            'mutation_level': mut_level}
                     if args.lineage:
                         if args.lineage in record['lineages']:
                             row['lineage'] = record['lineages'][args.lineage]
