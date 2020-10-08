@@ -13,6 +13,7 @@ fi
 cat <<EOF
 #BSUB -L /bin/bash
 #BSUB -J ident_${BATCH_NUMBER}
+##BSUB -o ident_%J.log
 
 ${IDENTER} --barcodes1 ${BARCODES}/{boydlab_isotype,boydlab_j} \
            --targets1  ${TARGETS}/{biomed2_j,boydlab_ighc} \
