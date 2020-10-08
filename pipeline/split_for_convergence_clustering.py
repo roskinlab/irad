@@ -38,7 +38,7 @@ def main():
     start_time = time.time()
 
     warehouse = DirectoryWarehouse(args.batch_dirname, 'v_segment', 'j_segment', 'cdr3_len', 'subject',
-        val_converter=lambda x: str(x).replace('/', 's'))
+        value_encoder=lambda x: str(x).replace('/', 's'))
 
     read_count = 0
     unparsed_count = 0
@@ -111,7 +111,7 @@ def main():
     for signature, cdr3_aa in data.items():
         best_v, best_j, cdr3_length = signature
 
-        with warehouse.open('.fasta', 'wt', v_segment=best_v, j_segment = best_j, cdr3_len=cdr3_length,
+        with warehouse.open('.fasta', 'wt', v_segment=best_v, j_segment=best_j, cdr3_len=cdr3_length,
                 subject=subject) as fasta_file_handle:
             for sequence, labels in cdr3_aa.items():
                 for l in batches(labels, args.max_idents):
