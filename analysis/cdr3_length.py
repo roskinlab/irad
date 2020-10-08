@@ -42,6 +42,14 @@ def get_parse_query(parse):
 def make_slice(range_):
     return slice(range_['start'], range_['stop'])
 
+def calc_type(record):
+    type_ = record['sequence']['annotations']['target1']
+    vh, framework = record['sequence']['annotations']['target2'].split('_')
+    if type_ == 'IGHJ'
+        return 'DNA-' + framework
+    else
+        return type_
+
 def main():
     parser = argparse.ArgumentParser(description='get the CDR3 length from an Avro file',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -69,20 +77,24 @@ def main():
                         subject = record['subject']
                         type_ = record['sequence']['annotations']['target1']
 
+                        v_j_in_frame = parse['v_j_in_frame']
+                        has_stop_codon = parse['has_stop_codon']
+
                         cdr3_slice = make_slice(parse['ranges']['CDR3'])
                         query_sequence = get_parse_query(parse)
                         cdr3_sequence = query_sequence[cdr3_slice]
-
                         cdr3_length = len(cdr3_sequence.replace('-', ''))
 
                         if writer is None:
                             if args.lineage:
-                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'cdr3_length'])
+                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type', 'lineage', 'v_j_in_frame', 'has_stop_codon', 'cdr3_length'])
                             else:
-                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'cdr3_length'])
+                                writer = csv.DictWriter(sys.stdout, fieldnames=['subject', 'source', 'type',            'v_j_in_frame', 'has_stop_codon', 'cdr3_length'])
                             writer.writeheader()
 
-                        row = {'subject': record['subject'], 'source': record['source'], 'type': type_, 'cdr3_length': cdr3_length}
+                        row = {'subject': record['subject'], 'source': record['source'],
+                               'type': type_, 'v_j_in_frame': v_j_in_frame, 'has_stop_codon': has_stop_codon,
+                               'cdr3_length': cdr3_length}
                         if args.lineage:
                             if args.lineage in record['lineages']:
                                 row['lineage'] = record['lineages'][args.lineage]
