@@ -61,10 +61,15 @@ class DirectoryWarehouse:
                 # if the final key is given
                 final_key = self.partition_keys[-1]
                 if final_key in keyvalue_args:
-                    final_value = self.value_encoder(keyvalue_args[final_key])
-                    dir_path = dir_path / (final_key + '=' + final_value + suffix)
-                    if dir_path.exists():
-                        yield values + [final_value]
+                    final_value = keyvalue_args[final_key]
+                    # give the list without the last value
+                    if final_value is None:
+                        yield values
+                    else:
+                        final_value = self.value_encoder(final_value)
+                        dir_path = dir_path / (final_key + '=' + final_value + suffix)
+                        if dir_path.exists():
+                            yield values + [final_value]
                 else:   # otherwise, iterate over what's in the warehouse
                     key_label = final_key + '='
                     if dir_path.is_dir():
