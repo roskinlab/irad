@@ -9,5 +9,5 @@ cat <<EOS
 #BSUB -L /bin/bash
 #BSUB -W 2:00
 
-${CDR3_LENGTH} ${PARSE_LABEL} --lineage ${LINEAGE_LABEL} source=*.clones.igblast.avro >cdr3_length.tsv
+${CDR3_LENGTH} ${PARSE_LABEL} --lineage ${LINEAGE_LABEL} source=*.clones.igblast.avro >cdr3_length.csv
 EOS
