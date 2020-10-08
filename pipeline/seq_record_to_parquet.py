@@ -14,7 +14,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from roskinlib.utils import open_compressed
-from roskinlib.schemata.avro import PARSE, SEQUENCE
+from roskinlib.schemata.avro import SEQUENCE, PARSE
 
 def deduce_schema(filename, examine_records=1000):
     with open_compressed(filename, 'rb') as file_handle:
@@ -34,8 +34,8 @@ def deduce_schema(filename, examine_records=1000):
                             pa.field('source',   pa.string(), nullable=False),
                             pa.field('name',     pa.string(), nullable=False),
                             pa.field('sequence', pa.binary(), nullable=False)] +
-                           [pa.field('parse_' + p, pa.binary(), nullable=True) for p in parses_ids] +
-                           [pa.field('lineage_' + p, pa.string(), nullable=True) for p in lineages_ids])
+                           [pa.field('parse_' + p, pa.binary(), nullable=True) for p in sorted(parses_ids)] +
+                           [pa.field('lineage_' + p, pa.string(), nullable=True) for p in sorted(lineages_ids)])
 
         return schema, parses_ids, lineages_ids
 
@@ -77,8 +77,10 @@ def main():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # input files
     parser.add_argument('seq_record_filename', metavar='seq_record.avro', help='the Avro file with the sequence records')
+    # output directory
+    parser.add_argument('dataset_root', metavar='dataset-root', help='the root directory of the Parquet dataset')
     # options
-    parser.add_argument('--batch-size', '-b', metavar='B', type=int, default=100000, help='the number of rows to insert at a time')
+    parser.add_argument('--batch-size', '-b', metavar='B', type=int, default=50000, help='the number of rows to insert at a time')
 
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
@@ -100,20 +102,23 @@ def main():
                  [avro_encoder(avro_2nd_field_iterator(filename, 'parses', p), parse_avro_schema) for p in parses_ids] + \
                  [avro_2nd_field_missable_iterator(filename, 'lineages', l) for l in lineages_ids]
 
-    #parquet_file = pq.ParquetWriter('example.parquet', parquet_schema, compression='gzip')
+    #with pq.ParquetWriter(sys.stdout.buffer, parquet_schema, compression='gzip') as parquet_file:
 
-    tables_written = 0
-    still_data = True
-    while still_data:
-        data = [take(batch_n, i) for i in data_iters]
-        table = pa.Table.from_arrays(data, schema=parquet_schema)
+    table = pa.Table.from_arrays(data_iters, schema=parquet_schema)
+    pq.write_to_dataset(table, root_path=args.dataset_root, partition_cols=['subject', 'sample', 'source'], compression='gzip')
 
-        if table.num_rows == 0:
-            still_data = False
-        else:
-            #parquet_file.write_table(table)
-            pq.write_to_dataset(table, root_path='dataset_name', partition_cols=['subject', 'sample', 'source'], compression='gzip')
-            tables_written += 1
+    #tables_written = 0
+    #still_data = True
+    #while still_data:
+    #    data = [take(batch_n, i) for i in data_iters]
+    #    table = pa.Table.from_arrays(data, schema=parquet_schema)
+    #
+    #    if table.num_rows == 0:
+    #        still_data = False
+    #    else:
+    #        #parquet_file.write_table(table)
+    #        pq.write_to_dataset(table, root_path=args.dataset_root, partition_cols=['subject', 'sample', 'source'], compression='gzip')
+    #        tables_written += 1
 
     elapsed_time = time.time() - start_time
     logging.info('elapsed time %s', time.strftime('%H hours, %M minutes, %S seconds', time.gmtime(elapsed_time)))
