@@ -1,17 +1,16 @@
 #!/usr/bin/bash
 
-SORTER=/data/RoskinLab/irbase/pipeline/sort_seq_records.py
-
+CONVERTER=~/irbase/pipeline/seq_record_to_parquet.py
 SOURCE=${1?the source Avro file must be given}
-TARGET=${2?the destination Avro file must be provided}
-
-LABEL=$(basename "${SOURCE}" .avro)
+DATASET_ROOT=${2?the root of the parquet dataset must be given}
+LABEL=$(basename "${SOURCE}" .clones.igblast.avro)
 
 cat <<EOF
 #BSUB -L /bin/bash
-#BSUB -W 2:00
-#BSUB -M 16000
-#BSUB -J sort_${LABEL}
+#BSUB -W 4:00
+#BSUB -M 18000
+#BSUB -J parquet_${LABEL}
+#BSUB -o logs/parquet_${LABEL}_%J.log
 
-${SORTER} ${SOURCE} >${TARGET}
+${CONVERTER} ${SOURCE} ${DATASET_ROOT}
 EOF
