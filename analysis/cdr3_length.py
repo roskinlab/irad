@@ -45,9 +45,9 @@ def make_slice(range_):
 def calc_type(record):
     type_ = record['sequence']['annotations']['target1']
     vh, framework = record['sequence']['annotations']['target2'].split('_')
-    if type_ == 'IGHJ'
+    if type_ == 'IGHJ':
         return 'DNA-' + framework
-    else
+    else:
         return type_
 
 def main():
