@@ -53,7 +53,7 @@ Then from the command like, you can do:
 cd ~
 git clone https://github.com/roskinlab/irbase.git
 ```
-and enter in your github username and the personal access token as your password.
+and enter in your github username and the personal access token as your password (be sure to use all lowercase for your git username).
 
 Then you will need to tell python to look there when you do an import:
 ```
