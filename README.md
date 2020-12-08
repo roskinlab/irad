@@ -2,7 +2,7 @@
 
 ## Python3 setup on BMI cluster
 
-Set up some enviroments variables for the vevent:
+Set up some enviroments variables for the venv:
 
 ```
 module load libffi         # you'll want this for using pandas, etc.
@@ -45,6 +45,12 @@ Download and install Visual Studio Code from:
 
 https://code.visualstudio.com/
 
+Start Visual Studio Code and click Extentions (icon of four boxes on the left or type ctrl-shift-x) and search for and install the following extentions:
+```
+Remote-SSH
+Python
+```
+
 ### Windows ###
 
 First, you'll need install an SSH client so that you can connect to the cluster. Follow the instructions here:
@@ -75,6 +81,8 @@ Once it's downloaded, you should be able to run
 ssh cluster
 ```
 without having to enter your password.
+
+Now select Remote Explorer (icon of a monitor on the left) and you should be able to select "cluster" from the list to connect to the cluster.
 
 ## Getting and using the repository
 
