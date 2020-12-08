@@ -54,7 +54,7 @@ I suggest making the SSH key on the cluster. You can do this by logging into the
 ```
 ssh-keygen
 ```
-On the command line. Use the default location for the key: .ssh/id_rsa. You'll download this key to your local machine, linking the computers together.
+On the command line. Use the default location for the key: .ssh/id_rsa. I usually use an empty passphrase. You'll download this key to your local machine, linking the computers together.
 
 ## Setting up SSH on Windows for use by VC Code ##
 
@@ -72,7 +72,7 @@ cd
 cd .ssh
 code config
 ```
-And add the following lines, making sure to change *both* YOURUSERNAMEs to your cluster username, before saving the file:
+And add the following lines, making sure to change *both* instances YOURUSERNAME to your cluster username, before saving the file:
 ```
 Host *
     ServerAliveInterval 60
@@ -82,7 +82,7 @@ Host ssh cchmc
 Host bmiclusterp bmiclusterp2 cluster
     Hostname bmiclusterp.chmcres.cchmc.org
     User YOURUSERNAME
-    ProxyCommand ssh -q ssh nc -w 180 %h %p
+    ProxyCommand C:\Windows\System32\OpenSSH\ssh.exe -q ssh nc -w 180 %h %p
 ```
 (the extra hope through ssh.research.cchmc.org means you'll be able to connect without having to use the VPN) then you
 should be able to download the private key by running (in the .ssh directory):
@@ -98,7 +98,7 @@ without having to enter your password.
 ## Setting up SSH on MacOSX/Linux for use by VC Code ##
 
 Linux and MacOSX already have SSH installed so you only have to modify the config file. Edit ~/.ssh/config and add the
-following lines, making sure to change *both* YOURUSERNAMEs to your cluster username, before saving the file:
+following lines, making sure to change *both* instances YOURUSERNAME to your cluster username, before saving the file:
 ```
 Host *
     ServerAliveInterval 60
@@ -113,7 +113,7 @@ Host bmiclusterp bmiclusterp2 cluster
 (the extra hope through ssh.research.cchmc.org means you'll be able to connect without having to use the VPN) then you
 should be able to download the private key by running (in the .ssh directory):
 ```
-scp cluster:.ssh/id_dsa .
+scp cluster:.ssh/id_dsa ~/.ssh/
 ```
 Once it's downloaded, you should be able to run
 ```
