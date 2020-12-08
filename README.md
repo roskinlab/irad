@@ -125,6 +125,8 @@ without having to enter your password.
 
 Now select Remote Explorer (icon of a monitor on the left) and you should be able to select "cluster" from the list to connect to the cluster.
 
+More to come.
+
 ## Getting and using the repository
 
 To set up git, on the command line run:
