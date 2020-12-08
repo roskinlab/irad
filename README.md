@@ -35,6 +35,35 @@ and install some common packages:
 proxy_on    # to let you download packages from the internet
 pip install --upgrade pyarrow pip fastavro biopython scipy numpy pandas scikit-learn
 ```
+
+## Setting up SSH on the cluster ##
+
+
+## Visual Studio Code ##
+
+Download and install Visual Studio Code from:
+
+https://code.visualstudio.com/
+
+### Windows ###
+
+First, you'll need install an SSH client so that you can connect to the cluster. Follow the instructions here:
+
+https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#installing-openssh-from-the-settings-ui-on-windows-server-2019-or-windows-10-1809
+
+Then open the Command Prompt (hit the windows key, type "cmd", and hit enter). Then make the make the .ssh directory:
+```
+mkdir .ssh
+```
+Then, inside Visual Studio Code, you can select New File and add:
+```
+Host bmiclusterp bmiclusterp2 cluster
+    Hostname bmiclusterp.chmcres.cchmc.org
+    User ros6cc
+```
+and save that file to the folder .ssh in your home directory (This PC > Windows (C:) > User > YOURUSERNAME > .ssh)
+as "config", making sure to select "No extention (\*.)" as the save type.
+
 ## Getting and using the repository
 
 To set up git, on the command line run:
