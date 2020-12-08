@@ -55,14 +55,26 @@ Then open the Command Prompt (hit the windows key, type "cmd", and hit enter). T
 ```
 mkdir .ssh
 ```
-Then, inside Visual Studio Code, you can select New File and add:
+Then, start Visual Studio Code to edit the SSH config file
+```
+cd .ssh
+code config
+```
+And add the following lines, making sure to change YOURUSERNAME to your cluster username, before saving the file:
 ```
 Host bmiclusterp bmiclusterp2 cluster
     Hostname bmiclusterp.chmcres.cchmc.org
-    User ros6cc
+    User YOURUSERNAME
 ```
-and save that file to the folder .ssh in your home directory (This PC > Windows (C:) > User > YOURUSERNAME > .ssh)
-as "config", making sure to select "No extention (\*.)" as the save type.
+then you should be able to download the private key by running (in the .ssh directory):
+```
+scp cluster:.ssh/id_dsa .
+```
+Once it's downloaded, you should be able to run
+```
+ssh cluster
+```
+without having to enter your password.
 
 ## Getting and using the repository
 
