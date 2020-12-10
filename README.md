@@ -54,7 +54,9 @@ I suggest making the SSH key on the cluster. You can do this by logging into the
 ```
 ssh-keygen
 ```
-On the command line. Use the default location for the key: .ssh/id_rsa. I usually use an empty passphrase. You'll download this key to your local machine, linking the computers together.
+On the command line. Use the default location for the key: .ssh/id_rsa. I usually use an empty passphrase. You'll
+download this key to your local machine, linking the computers together, in one of the next two sections
+depending on your operating system.
 
 ## Setting up SSH on Windows for use by VC Code ##
 
@@ -97,8 +99,9 @@ without having to enter your password.
 
 ## Setting up SSH on MacOSX/Linux for use by VC Code ##
 
-Linux and MacOSX already have SSH installed so you only have to modify the config file. Edit ~/.ssh/config and add the
-following lines, making sure to change *both* instances YOURUSERNAME to your cluster username, before saving the file:
+Linux and MacOSX already have SSH installed so you only have to modify the config file. Edit ~/.ssh/config
+(note this file might not already exists but that's ok) and add the following lines, making sure to change
+*both* instances YOURUSERNAME to your cluster username, before saving the file:
 ```
 Host *
     ServerAliveInterval 60
