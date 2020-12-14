@@ -89,7 +89,7 @@ Host bmiclusterp bmiclusterp2 cluster
 (the extra hope through ssh.research.cchmc.org means you'll be able to connect without having to use the VPN) then you
 should be able to download the private key by running (in the .ssh directory):
 ```
-scp cluster:.ssh/id_dsa .
+scp cluster:.ssh/id_rsa .
 ```
 Once it's downloaded, you should be able to run
 ```
@@ -116,7 +116,7 @@ Host bmiclusterp bmiclusterp2 cluster
 (the extra hope through ssh.research.cchmc.org means you'll be able to connect without having to use the VPN) then you
 should be able to download the private key by running (in the .ssh directory):
 ```
-scp cluster:.ssh/id_dsa ~/.ssh/
+scp cluster:.ssh/id_rsa ~/.ssh/
 ```
 Once it's downloaded, you should be able to run
 ```
