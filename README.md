@@ -58,6 +58,11 @@ On the command line. Use the default location for the key: .ssh/id_rsa. I usuall
 download this key to your local machine, linking the computers together, in one of the next two sections
 depending on your operating system.
 
+Then you need to tell the server that people with this key are authorized to connect using it:
+```
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+```
+
 ## Setting up SSH on Windows for use by VC Code ##
 
 You'll need install the OpenSSH client so that you can connect to the cluster. Follow the instructions here:
