@@ -1,4 +1,8 @@
-# irbase
+# IRAD
+
+Code repository for the immune receptor antigen database.
+
+# Behind the Scenes
 
 ## Python3 setup on BMI cluster
 
